@@ -2,8 +2,7 @@
 #include <iostream>
 #include <assert.h>
 
-FractalCreator::FractalCreator(int width, int height) :
-    total_(0),
+FractalCreator::FractalCreator(int width, int height, double scale) :
     width_(width),
     height_(height),
     histogram_(new int[Mandelbrot::MAX_ITERATIONS]()),
@@ -11,29 +10,26 @@ FractalCreator::FractalCreator(int width, int height) :
     bitmap_(width, height),
     zoomlist_(width, height)
 {
-    zoomlist_.add(Zoom(width / 2, height / 2, 4.0 / width));
+    zoomlist_.updateDataCenter(Zoom(width /2 , height / 2, scale));
 }
-
 
 void FractalCreator::run(std::string name)
 {
     calculateIterations();
-    calculateTotalIterations();
     calculateRangeTotals();
     drawFractal();
-    writeBitmap("test.bmp");
+    writeBitmap(name);
 }
-
 
 void FractalCreator::calculateIterations()
 {
-    for (double y = 0; y < height_; y++)
+    for (auto y = 0; y < height_; y++)
     {
-        for (double x = 0; x < width_; x++)
+        for (auto x = 0; x < width_; x++)
         {
-            std::pair<double, double> coords = zoomlist_.doZoom(x, y);
+            std::pair<double, double> coords = zoomlist_.getCoordinates(x, y);
 
-            int iterations = Mandelbrot::getIterations(coords.first, coords.second);
+            int iterations = Mandelbrot::getNumberOfIterations(coords.first, coords.second);
             fractal_[y * width_ + x] = iterations;
             if (iterations != Mandelbrot::MAX_ITERATIONS)
             {
@@ -43,20 +39,36 @@ void FractalCreator::calculateIterations()
     }
 }
 
-void FractalCreator::calculateTotalIterations()
+void FractalCreator::addRange(double rangeEndIteration, const RGB &rgb)
 {
+    ranges_.push_back(rangeEndIteration * Mandelbrot::MAX_ITERATIONS);
+    colors_.push_back(rgb);
+
+    if (gotFirstRange_)
+    {
+        rangesTotal_.push_back(0);
+    }
+    gotFirstRange_ = true;
+}
+
+void FractalCreator::calculateRangeTotals()
+{
+    int rangeIndex = 0;
     for (auto i = 0; i < Mandelbrot::MAX_ITERATIONS; i++)
     {
-        total_ += histogram_[i];
+        int numberOfPixels = histogram_[i];
+        if (i >= ranges_[rangeIndex + 1])
+            rangeIndex++;
+        rangesTotal_[rangeIndex] += numberOfPixels;
+    }
+    for (int value : rangesTotal_)
+    {
+        std::cout << value << std::endl;
     }
 }
 
-
 void FractalCreator::drawFractal()
 {
-    RGB startColor(0, 0, 0);
-    RGB endtColor(0, 0, 255);
-    RGB colorDiff = endtColor - startColor;
     for (double y = 0; y < height_; y++)
     {
         for (double x = 0; x < width_; x++)
@@ -75,23 +87,20 @@ void FractalCreator::drawFractal()
             if (iterations != Mandelbrot::MAX_ITERATIONS)
             {
                 int totalPixels = 0;
-                double hue = 0.0;
+                //totalPixels = histogram_[iterations];
                 for (auto i = rangeStart; i <= iterations; i++)
                 {
                     totalPixels += histogram_[i];
                 }
-                red = startColor.red_ + colorDiff.red_ * (double)totalPixels / rangeTotal;
-                green = startColor.green_ + colorDiff.green_ * (double)totalPixels / rangeTotal;
-                blue = startColor.blue_ + colorDiff.blue_ * (double)totalPixels / rangeTotal;
+                red = startColor.red_ + colorDiff.red_ * pow((double)totalPixels / rangeTotal, 1);
+                green = startColor.green_ + colorDiff.green_ * pow((double)totalPixels / rangeTotal, 1);
+                blue = startColor.blue_ + colorDiff.blue_ * pow((double)totalPixels / rangeTotal, 1);
+                //green = 255 * (double)iterations / Mandelbrot::MAX_ITERATIONS;
+                //green = green * green * green;
             }
             bitmap_.setPixel(x, y, red, green, blue);
         }
     }
-}
-
-void FractalCreator::addZoom(const Zoom &zoom)
-{
-    zoomlist_.add(zoom);
 }
 
 void FractalCreator::writeBitmap(std::string name)
@@ -99,34 +108,9 @@ void FractalCreator::writeBitmap(std::string name)
     bitmap_.write(name);
 }
 
-void FractalCreator::addRange(double rangeEndIteration, const RGB &rgb)
+void FractalCreator::addCenterShift(const Zoom &zoom)
 {
-    ranges_.push_back(rangeEndIteration * Mandelbrot::MAX_ITERATIONS);
-    colors_.push_back(rgb);
-
-    if (gotFirstRange)
-    {
-        rangesTotal_.push_back(0);
-    }
-    gotFirstRange = true;
-
-
-}
-
-void FractalCreator::calculateRangeTotals()
-{
-    int rangeIndex = 0;
-    for (auto i = 0; i < Mandelbrot::MAX_ITERATIONS; i++)
-    {
-        int pixels = histogram_[i];
-        if (i >= ranges_[rangeIndex + 1])
-            rangeIndex++;
-        rangesTotal_[rangeIndex] += pixels;
-    }
-    for (int value : rangesTotal_)
-    {
-        std::cout << value << std::endl;
-    }
+    zoomlist_.updateDataCenter(zoom);
 }
 
 int FractalCreator::getRange(int iterations) const
@@ -143,7 +127,6 @@ int FractalCreator::getRange(int iterations) const
     range--;
     assert(range > -1);
     assert(range < ranges_.size());
-
     return range;
 }
 

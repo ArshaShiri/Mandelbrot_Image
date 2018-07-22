@@ -1,17 +1,2 @@
 ﻿  main.cpp
-  Mandelbrot.cpp
-  FractalCreator.cpp
-c:\users\arsha\source\repos\mandelbrot-image\mandelbrot-image\fractalcreator.cpp(34): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\arsha\source\repos\mandelbrot-image\mandelbrot-image\fractalcreator.cpp(37): warning C4244: 'argument': conversion from 'double' to '::size_t', possible loss of data
-c:\users\arsha\source\repos\mandelbrot-image\mandelbrot-image\fractalcreator.cpp(64): warning C4244: 'argument': conversion from 'double' to '::size_t', possible loss of data
-c:\users\arsha\source\repos\mandelbrot-image\mandelbrot-image\fractalcreator.cpp(83): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
-c:\users\arsha\source\repos\mandelbrot-image\mandelbrot-image\fractalcreator.cpp(84): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
-c:\users\arsha\source\repos\mandelbrot-image\mandelbrot-image\fractalcreator.cpp(85): warning C4244: '=': conversion from 'double' to 'uint8_t', possible loss of data
-c:\users\arsha\source\repos\mandelbrot-image\mandelbrot-image\fractalcreator.cpp(87): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-c:\users\arsha\source\repos\mandelbrot-image\mandelbrot-image\fractalcreator.cpp(104): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-  Generating Code...
-  Compiling...
-  ZoomList.cpp
-  RGB.cpp
-  Generating Code...
   Mandelbrot-Image.vcxproj -> C:\Users\arsha\source\repos\Mandelbrot-Image\x64\Debug\Mandelbrot-Image.exe
